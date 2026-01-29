@@ -1,8 +1,17 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { doc, getDoc } from 'firebase/firestore';
+import { db } from '../services/firebase';
 import './FilterPanel.css';
 
 const CONFIG_PASSWORD = '123456';
+
+const QUICK_LINK_LABELS = {
+    xaydung: 'Xây dựng QTKT',
+    huongdan: 'Hướng dẫn XD QTKT',
+    thumuc: 'Thư mục QTKT BYT, BV',
+    nhanqtkt: 'Thư mục nhận QTKT'
+};
 
 const FilterPanel = ({
     searchValue,
@@ -18,6 +27,23 @@ const FilterPanel = ({
     const [showPasswordModal, setShowPasswordModal] = useState(false);
     const [passwordInput, setPasswordInput] = useState('');
     const [passwordError, setPasswordError] = useState('');
+    const [quickLinks, setQuickLinks] = useState({});
+
+    // Load quick links from Firestore
+    useEffect(() => {
+        const loadQuickLinks = async () => {
+            try {
+                const docRef = doc(db, 'settings', 'quickLinks');
+                const docSnap = await getDoc(docRef);
+                if (docSnap.exists()) {
+                    setQuickLinks(docSnap.data());
+                }
+            } catch (error) {
+                console.error('Error loading quick links:', error);
+            }
+        };
+        loadQuickLinks();
+    }, []);
 
     // Sync internal state with prop if it changes externally
     useEffect(() => {
@@ -177,6 +203,28 @@ const FilterPanel = ({
                 <button type="button" className="btn-config" onClick={handleConfigClick}>
                     ⚙️ Cấu hình
                 </button>
+
+                {/* Quick Access Links */}
+                {Object.keys(quickLinks).some(key => quickLinks[key]) && (
+                    <div className="quick-access-section">
+                        <h4 className="quick-access-title">Truy cập nhanh</h4>
+                        <div className="quick-access-links">
+                            {Object.entries(quickLinks).map(([key, url]) => (
+                                url && (
+                                    <a
+                                        key={key}
+                                        href={url}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="quick-link-btn"
+                                    >
+                                        🔗 {QUICK_LINK_LABELS[key] || key}
+                                    </a>
+                                )
+                            ))}
+                        </div>
+                    </div>
+                )}
             </div>
 
             {/* Password Modal */}

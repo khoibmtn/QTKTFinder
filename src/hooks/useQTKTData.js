@@ -20,19 +20,22 @@ export const useQTKTData = () => {
                     const { data, timestamp } = JSON.parse(cached);
                     const isExpired = Date.now() - timestamp > CACHE_DURATION;
 
-                    if (!isExpired) {
+                    // Don't use cache if expired OR if data is empty
+                    if (!isExpired && data && data.length > 0) {
                         console.log('📦 Loading data from cache');
                         setRecords(data);
                         setLoading(false);
                         return true; // Cache hit
-                    } else {
+                    } else if (isExpired) {
                         console.log('⏰ Cache expired, fetching fresh data');
+                    } else {
+                        console.log('📭 Cache empty, fetching fresh data');
                     }
                 }
             } catch (err) {
                 console.error('Error reading cache:', err);
             }
-            return false; // Cache miss or expired
+            return false; // Cache miss, expired, or empty
         };
 
         // Check cache first

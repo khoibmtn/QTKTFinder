@@ -15,6 +15,9 @@ const FilterPanel = ({
     const navigate = useNavigate();
     const [inputValue, setInputValue] = useState(searchValue || '');
     const [isInstantSearch, setIsInstantSearch] = useState(true);
+    const [showPasswordModal, setShowPasswordModal] = useState(false);
+    const [passwordInput, setPasswordInput] = useState('');
+    const [passwordError, setPasswordError] = useState('');
 
     // Sync internal state with prop if it changes externally
     useEffect(() => {
@@ -49,12 +52,25 @@ const FilterPanel = ({
     };
 
     const handleConfigClick = () => {
-        const password = prompt('Nhập mật khẩu để vào khu vực cài đặt:');
-        if (password === CONFIG_PASSWORD) {
+        setShowPasswordModal(true);
+        setPasswordInput('');
+        setPasswordError('');
+    };
+
+    const handlePasswordSubmit = (e) => {
+        e.preventDefault();
+        if (passwordInput === CONFIG_PASSWORD) {
+            setShowPasswordModal(false);
             navigate('/admin');
-        } else if (password !== null) {
-            alert('Mật khẩu không đúng!');
+        } else {
+            setPasswordError('Mật khẩu không đúng!');
         }
+    };
+
+    const handleModalClose = () => {
+        setShowPasswordModal(false);
+        setPasswordInput('');
+        setPasswordError('');
     };
 
     return (
@@ -162,8 +178,37 @@ const FilterPanel = ({
                     ⚙️ Cấu hình
                 </button>
             </div>
+
+            {/* Password Modal */}
+            {showPasswordModal && (
+                <div className="password-modal-overlay" onClick={handleModalClose}>
+                    <div className="password-modal" onClick={(e) => e.stopPropagation()}>
+                        <h4>🔐 Nhập mật khẩu</h4>
+                        <form onSubmit={handlePasswordSubmit}>
+                            <input
+                                type="password"
+                                value={passwordInput}
+                                onChange={(e) => setPasswordInput(e.target.value)}
+                                placeholder="Nhập mật khẩu..."
+                                autoFocus
+                                className="password-input"
+                            />
+                            {passwordError && <p className="password-error">{passwordError}</p>}
+                            <div className="password-modal-actions">
+                                <button type="button" className="btn-cancel" onClick={handleModalClose}>
+                                    Hủy
+                                </button>
+                                <button type="submit" className="btn-submit">
+                                    Xác nhận
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };
 
 export default FilterPanel;
+

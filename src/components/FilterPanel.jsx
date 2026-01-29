@@ -101,7 +101,12 @@ const FilterPanel = ({
 
     return (
         <div className="filter-panel">
-            <h3 className="filter-title">Bộ lọc tìm kiếm</h3>
+            <div className="filter-header">
+                <h3 className="filter-title">Bộ lọc tìm kiếm</h3>
+                <button type="button" className="btn-config-icon" onClick={handleConfigClick} title="Cấu hình">
+                    ⚙️
+                </button>
+            </div>
 
             <div className="filter-content">
                 <div className="filter-group">
@@ -199,10 +204,6 @@ const FilterPanel = ({
                         Tìm kiếm
                     </button>
                 )}
-
-                <button type="button" className="btn-config" onClick={handleConfigClick}>
-                    ⚙️ Cấu hình
-                </button>
 
                 {/* Quick Access Links */}
                 {Object.keys(quickLinks).some(key => quickLinks[key]) && (

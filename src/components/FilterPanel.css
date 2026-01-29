@@ -43,6 +43,15 @@
     cursor: pointer;
 }
 
+/* Desktop optimization */
+@media (min-width: 1024px) {
+    .filter-panel {
+        padding: 16px;
+        gap: 16px;
+        margin: 16px 0;
+    }
+}
+
 @media (max-width: 768px) {
     .filter-panel {
         flex-direction: column;

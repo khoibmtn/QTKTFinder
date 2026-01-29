@@ -158,7 +158,7 @@ const FilterPanel = ({
                     </button>
                 )}
 
-                <button className="btn-config" onClick={handleConfigClick}>
+                <button type="button" className="btn-config" onClick={handleConfigClick}>
                     ⚙️ Cấu hình
                 </button>
             </div>

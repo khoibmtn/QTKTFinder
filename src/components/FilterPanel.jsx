@@ -159,6 +159,7 @@ const FilterPanel = ({
                         <span className="checkmark"></span>
                         <span className="checkbox-label">Tìm kiếm tức thời</span>
                     </label>
+                    <p className="hint-text">Tắt tìm kiếm tức thời nếu trang bị treo, hiện kết quả chậm</p>
                 </div>
 
                 <div className="filter-group">
@@ -197,6 +198,9 @@ const FilterPanel = ({
                             </button>
                         )}
                     </div>
+                    {chuyenkhoa && (
+                        <p className="hint-text">Xóa chuyên khoa để hiển thị nhiều kết quả hơn</p>
+                    )}
                 </div>
 
                 {!isInstantSearch && (

@@ -259,6 +259,14 @@
     transform: rotate(45deg);
 }
 
+/* Hint text */
+.hint-text {
+    font-size: 0.75rem;
+    color: #b91c1c;
+    font-style: italic;
+    margin: 0.25rem 0 0;
+}
+
 /* Config button */
 .btn-config {
     display: flex;

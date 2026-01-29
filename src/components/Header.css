@@ -15,10 +15,8 @@
     gap: 0.75rem;
 }
 
-.search-icon-header {
-    color: var(--primary-color);
-    width: 22px;
-    height: 22px;
+.header-icon {
+    font-size: 1.4rem;
 }
 
 .app-title {

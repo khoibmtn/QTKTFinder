@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { parseCSV, readFileAsText } from '../services/csvParser';
 import { batchUploadRecords, getAccessCode, updateAccessCode } from '../services/firestore';
+import { clearQTKTCache } from '../hooks/useQTKTData';
 import './AdminUpload.css';
 
 const AdminUpload = () => {
@@ -73,6 +74,9 @@ const AdminUpload = () => {
             const result = await batchUploadRecords(records, replaceAll, onProgress);
 
             if (result.success) {
+                // Clear cache so users get fresh data
+                clearQTKTCache();
+
                 const totalLines = text.split('\n').filter(l => l.trim()).length - 1; // Exclude header
                 setMessage(`✅ Upload thành công ${result.count} bản ghi! (Tổng ${totalLines} dòng trong file)`);
                 setFile(null);

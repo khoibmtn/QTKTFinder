@@ -30,33 +30,63 @@ export const subscribeToQTKTRecords = (callback) => {
     });
 };
 
-// Batch upload CSV data
-export const batchUploadRecords = async (records, replaceAll = false) => {
-    try {
-        const batch = writeBatch(db);
+const BATCH_SIZE = 450; // Safe limit below Firestore's 500
 
-        // If replaceAll, delete existing records first
+// Batch upload CSV data with chunked processing
+export const batchUploadRecords = async (records, replaceAll = false, onProgress) => {
+    try {
+        let totalOperations = 0;
+
+        // Step 1: Delete existing records if replaceAll
         if (replaceAll) {
             const snapshot = await getDocs(collection(db, COLLECTION_NAME));
-            snapshot.docs.forEach(doc => {
-                batch.delete(doc.ref);
+            const docsToDelete = snapshot.docs;
+
+            // Delete in chunks
+            for (let i = 0; i < docsToDelete.length; i += BATCH_SIZE) {
+                const chunk = docsToDelete.slice(i, i + BATCH_SIZE);
+                const batch = writeBatch(db);
+
+                chunk.forEach(doc => batch.delete(doc.ref));
+                await batch.commit();
+
+                totalOperations += chunk.length;
+                onProgress?.({
+                    phase: 'deleting',
+                    current: totalOperations,
+                    total: docsToDelete.length
+                });
+            }
+        }
+
+        // Step 2: Add new records in chunks
+        totalOperations = 0;
+        for (let i = 0; i < records.length; i += BATCH_SIZE) {
+            const chunk = records.slice(i, i + BATCH_SIZE);
+            const batch = writeBatch(db);
+
+            chunk.forEach(record => {
+                const docRef = doc(collection(db, COLLECTION_NAME));
+                batch.set(docRef, {
+                    chuanqtkt: record.chuanqtkt || '',
+                    qdbanhanh: record.qdbanhanh || '',
+                    chuyenkhoa: record.chuyenkhoa || '',
+                    tenqtkt: record.tenqtkt || '',
+                    createdAt: serverTimestamp(),
+                    updatedAt: serverTimestamp()
+                });
+            });
+
+            await batch.commit();
+
+            totalOperations += chunk.length;
+            onProgress?.({
+                phase: 'uploading',
+                current: totalOperations,
+                total: records.length
             });
         }
 
-        // Add new records
-        records.forEach(record => {
-            const docRef = doc(collection(db, COLLECTION_NAME));
-            batch.set(docRef, {
-                chuanqtkt: record.chuanqtkt || '',
-                qdbanhanh: record.qdbanhanh || '',
-                chuyenkhoa: record.chuyenkhoa || '',
-                tenqtkt: record.tenqtkt || '',
-                createdAt: serverTimestamp(),
-                updatedAt: serverTimestamp()
-            });
-        });
-
-        await batch.commit();
         return { success: true, count: records.length };
     } catch (error) {
         console.error('Error uploading records:', error);

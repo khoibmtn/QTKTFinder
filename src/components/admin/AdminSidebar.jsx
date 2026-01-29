@@ -5,7 +5,6 @@ const AdminSidebar = ({ activeTab, onTabChange }) => {
         { id: 'category', icon: '📋', label: 'Quản lý danh mục' },
         { id: 'import', icon: '📥', label: 'Import dữ liệu' },
         { id: 'config', icon: '⚙️', label: 'Cấu hình' },
-        { id: 'password', icon: '🔐', label: 'Đổi mật khẩu' },
     ];
 
     return (

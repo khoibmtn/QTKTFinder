@@ -513,25 +513,6 @@ const ConfigurationPage = ({ chuanQTKTOptions, setChuanQTKTOptions }) => {
                     </button>
                 </section>
 
-                {/* Section 4: Change Access Code */}
-                <section className="config-section">
-                    <h3>Đổi mã truy cập</h3>
-                    <div className="code-form">
-                        <label>Mã truy cập mới</label>
-                        <div className="input-row">
-                            <input
-                                type="password"
-                                placeholder="Nhập mã mới..."
-                                value={newCode}
-                                onChange={(e) => setNewCode(e.target.value)}
-                            />
-                            <button onClick={handleChangeCode} className="btn-save">
-                                Lưu
-                            </button>
-                        </div>
-                    </div>
-                </section>
-
                 {/* Section 5: Quick Access Links */}
                 <section className="config-section">
                     <h3>Liên kết truy cập nhanh</h3>

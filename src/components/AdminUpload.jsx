@@ -54,12 +54,23 @@ const AdminUpload = () => {
         }
 
         setUploading(true);
-        setMessage('Đang upload...');
+        setMessage('Đang xử lý...');
 
         try {
             const text = await readFileAsText(file);
             const records = parseCSV(text);
-            const result = await batchUploadRecords(records, replaceAll);
+
+            // Progress callback
+            const onProgress = ({ phase, current, total }) => {
+                const percent = Math.round((current / total) * 100);
+                if (phase === 'deleting') {
+                    setMessage(`🗑️ Đang xóa dữ liệu cũ... ${current}/${total} (${percent}%)`);
+                } else {
+                    setMessage(`📤 Đang upload... ${current}/${total} (${percent}%)`);
+                }
+            };
+
+            const result = await batchUploadRecords(records, replaceAll, onProgress);
 
             if (result.success) {
                 const totalLines = text.split('\n').filter(l => l.trim()).length - 1; // Exclude header

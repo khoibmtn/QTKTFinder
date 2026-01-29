@@ -1,0 +1,15 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // qtkt_records collection - allow read for everyone, write for everyone (no auth)
+    match /qtkt_records/{document=**} {
+      allow read, write: if true;
+    }
+    
+    // settings collection - allow full access for configuration
+    match /settings/{document=**} {
+      allow read, write: if true;
+    }
+  }
+}

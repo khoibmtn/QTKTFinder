@@ -1,14 +1,17 @@
 import Fuse from 'fuse.js';
 
-// Fuzzy search configuration
+// Fuzzy search configuration - WORD based matching
 const fuseOptions = {
     keys: ['tenqtkt', 'chuyenkhoa'],
-    threshold: 0.4,
+    threshold: 0.3,        // Lower = more strict matching
     ignoreLocation: true,
     findAllMatches: true,
     minMatchCharLength: 2,
     includeScore: true,
-    includeMatches: true
+    includeMatches: true,
+    tokenize: true,        // Enable word tokenization
+    matchAllTokens: true,  // All words must match
+    shouldSort: true
 };
 
 // Create fuzzy search instance
@@ -24,22 +27,22 @@ export const fuzzySearch = (fuse, query) => {
     return fuse.search(query);
 };
 
-// Check if text matches fuzzy pattern (for ordered character matching)
+/**
+ * WORD-based fuzzy match
+ * Searches for words (not characters) within the text.
+ * Each word in the pattern must be found as a substring in the text.
+ */
 export const fuzzyMatch = (text, pattern) => {
     if (!pattern || !text) return false;
 
     const textLower = text.toLowerCase();
-    const patternLower = pattern.toLowerCase();
+    const patternWords = pattern.toLowerCase().trim().split(/\s+/);
 
-    let patternIndex = 0;
-
-    for (let i = 0; i < textLower.length && patternIndex < patternLower.length; i++) {
-        if (textLower[i] === patternLower[patternIndex]) {
-            patternIndex++;
-        }
-    }
-
-    return patternIndex === patternLower.length;
+    // Every word in the pattern must be found in the text
+    return patternWords.every(word => {
+        if (word.length === 0) return true;
+        return textLower.includes(word);
+    });
 };
 
 // Highlight matched text

@@ -1,7 +1,8 @@
-import AdminUpload from '../components/AdminUpload';
+import AdminLayout from '../components/admin/AdminLayout';
+import './AdminPage.css';
 
 function AdminPage() {
-    return <AdminUpload />;
+    return <AdminLayout />;
 }
 
 export default AdminPage;

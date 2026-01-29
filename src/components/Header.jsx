@@ -10,15 +10,6 @@ const Header = () => {
                 </svg>
                 <h1 className="app-title">Tra cứu quy trình kỹ thuật</h1>
             </div>
-            <div className="header-right">
-                <button
-                    className="btn-admin"
-                    onClick={() => window.location.href = '/admin'} // Simple navigation for now
-                >
-                    <span className="icon-settings">⚙️</span>
-                    Admin
-                </button>
-            </div>
         </header>
     );
 };

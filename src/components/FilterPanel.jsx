@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import './FilterPanel.css';
+
+const CONFIG_PASSWORD = '123456';
 
 const FilterPanel = ({
     searchValue,
@@ -10,6 +12,7 @@ const FilterPanel = ({
     chuyenkhoa,
     onChuyenkhoaChange
 }) => {
+    const navigate = useNavigate();
     const [inputValue, setInputValue] = useState(searchValue || '');
     const [isInstantSearch, setIsInstantSearch] = useState(true);
 
@@ -43,6 +46,15 @@ const FilterPanel = ({
 
     const clearChuyenkhoa = () => {
         onChuyenkhoaChange('');
+    };
+
+    const handleConfigClick = () => {
+        const password = prompt('Nhập mật khẩu để vào khu vực cài đặt:');
+        if (password === CONFIG_PASSWORD) {
+            navigate('/admin');
+        } else if (password !== null) {
+            alert('Mật khẩu không đúng!');
+        }
     };
 
     return (
@@ -146,9 +158,9 @@ const FilterPanel = ({
                     </button>
                 )}
 
-                <Link to="/admin" className="btn-config">
+                <button className="btn-config" onClick={handleConfigClick}>
                     ⚙️ Cấu hình
-                </Link>
+                </button>
             </div>
         </div>
     );

@@ -1,63 +1,257 @@
 .filter-panel {
+    background-color: var(--bg-sidebar);
+    border-radius: var(--radius-lg);
+    padding: 1.5rem;
+    height: 100%;
+    /* Fill sidebar */
+}
+
+.filter-title {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 1.5rem;
+    margin-top: 0;
+}
+
+.filter-content {
     display: flex;
-    gap: 20px;
-    flex-wrap: wrap;
-    padding: 20px;
-    background: #f8f9fa;
-    border-radius: 12px;
-    margin: 20px 0;
+    flex-direction: column;
+    gap: 1.25rem;
 }
 
 .filter-group {
     display: flex;
     flex-direction: column;
-    gap: 8px;
-    flex: 1;
-    min-width: 200px;
+    gap: 0.5rem;
 }
 
-.filter-group label {
-    font-size: 14px;
+.filter-label {
+    font-size: 0.9rem;
     font-weight: 600;
-    color: #333;
+    color: var(--text-primary);
 }
 
-.filter-select,
-.filter-input {
-    padding: 10px 14px;
-    font-size: 15px;
-    border: 1px solid #ddd;
-    border-radius: 8px;
-    outline: none;
-    transition: all 0.2s ease;
-    background: white;
-}
-
-.filter-select:focus,
-.filter-input:focus {
-    border-color: #4A90E2;
-    box-shadow: 0 0 0 2px rgba(74, 144, 226, 0.1);
-}
-
+.filter-input,
 .filter-select {
+    width: 100%;
+    padding: 0.6rem 0.75rem;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    font-size: 0.95rem;
+    background-color: var(--white);
+    color: var(--text-primary);
+    transition: border-color 0.2s;
+}
+
+.filter-input:focus,
+.filter-select:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.1);
+}
+
+.search-input-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.search-input {
+    padding-right: 2.5rem;
+}
+
+.search-icon-input {
+    position: absolute;
+    right: 0.75rem;
+    color: var(--text-secondary);
+    pointer-events: none;
+}
+
+/* Clear button for search input */
+.clear-btn {
+    position: absolute;
+    right: 2.25rem;
+    top: 50%;
+    transform: translateY(-50%);
+    background: transparent;
+    border: none;
+    color: #94a3b8;
+    cursor: pointer;
+    padding: 0.25rem;
+    font-size: 0.75rem;
+    line-height: 1;
+    border-radius: 50%;
+    width: 18px;
+    height: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.15s;
+}
+
+.clear-btn:hover {
+    background-color: #e2e8f0;
+    color: #475569;
+}
+
+/* Input with clear button wrapper */
+.input-with-clear {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.input-with-clear .filter-input {
+    padding-right: 2rem;
+}
+
+.clear-btn-inline {
+    position: absolute;
+    right: 0.5rem;
+    top: 50%;
+    transform: translateY(-50%);
+    background: transparent;
+    border: none;
+    color: #94a3b8;
+    cursor: pointer;
+    padding: 0.25rem;
+    font-size: 0.75rem;
+    line-height: 1;
+    border-radius: 50%;
+    width: 18px;
+    height: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.15s;
+}
+
+.clear-btn-inline:hover {
+    background-color: #e2e8f0;
+    color: #475569;
+}
+
+/* Button inside input */
+.search-icon-btn {
+    position: absolute;
+    right: 0.25rem;
+    top: 50%;
+    transform: translateY(-50%);
+    background: transparent;
+    border: none;
+    color: var(--primary-color);
+    cursor: pointer;
+    padding: 0.25rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: background-color 0.2s;
+}
+
+.search-icon-btn:hover {
+    background-color: rgba(37, 99, 235, 0.1);
+}
+
+.btn-search {
+    background-color: var(--primary-color);
+    color: var(--white);
+    padding: 0.75rem;
+    border-radius: var(--radius-md);
+    border: none;
+    font-weight: 600;
+    margin-top: 0.5rem;
+    transition: background-color 0.2s;
     cursor: pointer;
 }
 
-/* Desktop optimization */
-@media (min-width: 1024px) {
-    .filter-panel {
-        padding: 16px;
-        gap: 16px;
-        margin: 16px 0;
-    }
+.btn-search:hover {
+    background-color: var(--primary-hover);
 }
 
-@media (max-width: 768px) {
-    .filter-panel {
-        flex-direction: column;
-    }
+/* Checkbox Styling */
+.checkbox-container {
+    display: flex;
+    align-items: center;
+    position: relative;
+    padding-left: 28px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    user-select: none;
+    color: var(--text-primary);
+}
 
-    .filter-group {
-        min-width: 100%;
-    }
+.checkbox-container input {
+    position: absolute;
+    opacity: 0;
+    cursor: pointer;
+    height: 0;
+    width: 0;
+}
+
+.checkmark {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 20px;
+    width: 20px;
+    background-color: var(--white);
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    transition: all 0.2s;
+}
+
+.checkbox-container:hover input~.checkmark {
+    background-color: #f1f5f9;
+}
+
+.checkbox-container input:checked~.checkmark {
+    background-color: var(--primary-color);
+    border-color: var(--primary-color);
+}
+
+.checkmark:after {
+    content: "";
+    position: absolute;
+    display: none;
+}
+
+.checkbox-container input:checked~.checkmark:after {
+    display: block;
+}
+
+.checkbox-container .checkmark:after {
+    left: 7px;
+    top: 3px;
+    width: 5px;
+    height: 10px;
+    border: solid white;
+    border-width: 0 2px 2px 0;
+    transform: rotate(45deg);
+}
+
+/* Config button */
+.btn-config {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    background-color: transparent;
+    color: var(--text-secondary);
+    padding: 0.75rem;
+    border-radius: var(--radius-md);
+    border: 1px dashed var(--border-color);
+    font-size: 0.9rem;
+    font-weight: 500;
+    margin-top: auto;
+    text-decoration: none;
+    transition: all 0.2s;
+    cursor: pointer;
+}
+
+.btn-config:hover {
+    background-color: rgba(0, 0, 0, 0.05);
+    border-color: var(--text-secondary);
+    color: var(--text-primary);
 }

@@ -93,7 +93,26 @@ body {
   opacity: 0.9;
 }
 
-/* Responsive */
+/* Desktop optimization */
+@media (min-width: 1024px) {
+  .app-header {
+    padding: 12px 0;
+  }
+
+  .header-content h1 {
+    font-size: 22px;
+  }
+
+  .search-section {
+    padding: 24px;
+  }
+
+  .app-main {
+    padding: 24px 20px;
+  }
+}
+
+/* Mobile responsive */
 @media (max-width: 768px) {
   .header-content h1 {
     font-size: 20px;

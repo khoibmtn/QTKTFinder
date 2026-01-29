@@ -26,14 +26,28 @@ const BATCH_SIZE = 500; // Firestore batch limit is 500
 async function bulkImport(csvPath) {
     console.log(`📂 Reading CSV file: ${csvPath}`);
 
-    const csvContent = readFileSync(csvPath, 'utf8');
+    let csvContent = readFileSync(csvPath, 'utf8');
+
+    // Remove BOM if present
+    if (csvContent.charCodeAt(0) === 0xFEFF) {
+        csvContent = csvContent.slice(1);
+        console.log('📝 Removed BOM from CSV');
+    }
+
     const records = parse(csvContent, {
         columns: true,
         skip_empty_lines: true,
-        trim: true
+        trim: true,
+        bom: true  // Also handle BOM in csv-parse
     });
 
     console.log(`📊 Found ${records.length} records to import`);
+
+    // Debug: Show first record keys
+    if (records.length > 0) {
+        console.log('🔑 First record keys:', Object.keys(records[0]));
+        console.log('📋 First record:', records[0]);
+    }
 
     // Clear existing data first (optional)
     console.log('🗑️  Clearing existing data...');

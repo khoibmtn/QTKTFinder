@@ -109,6 +109,12 @@
     background-color: #dbeafe;
 }
 
+/* Lightweight hover effect for rows with custom styling */
+.results-table tbody tr:hover {
+    outline: 1px solid #f59e0b;
+    outline-offset: -1px;
+}
+
 /* Compact cells */
 .results-table td {
     padding: 0.35rem 0.75rem;

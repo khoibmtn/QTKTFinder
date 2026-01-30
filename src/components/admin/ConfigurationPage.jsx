@@ -284,7 +284,7 @@ const ConfigurationPage = ({ chuanQTKTOptions, setChuanQTKTOptions }) => {
         setColorRules(newRules);
     };
 
-    const updateCustomRule = (id, field, value) => {
+    const updateCustomRule = (id, field, value, shouldSave = false) => {
         const newRules = {
             ...colorRules,
             customRules: (colorRules.customRules || []).map(rule =>
@@ -292,6 +292,10 @@ const ConfigurationPage = ({ chuanQTKTOptions, setChuanQTKTOptions }) => {
             )
         };
         setColorRules(newRules);
+        // Save immediately with the new rules to avoid stale closure issue
+        if (shouldSave) {
+            saveColorRules(newRules);
+        }
     };
 
     const saveCustomRule = () => {
@@ -473,24 +477,20 @@ const ConfigurationPage = ({ chuanQTKTOptions, setChuanQTKTOptions }) => {
                                     <ColorPicker
                                         value={rule.textColor}
                                         onChange={(color) => {
-                                            updateCustomRule(rule.id, 'textColor', color);
-                                            setTimeout(saveCustomRule, 100);
+                                            updateCustomRule(rule.id, 'textColor', color, true);
                                         }}
                                         onReset={() => {
-                                            updateCustomRule(rule.id, 'textColor', null);
-                                            setTimeout(saveCustomRule, 100);
+                                            updateCustomRule(rule.id, 'textColor', null, true);
                                         }}
                                         type="text"
                                     />
                                     <ColorPicker
                                         value={rule.bgColor}
                                         onChange={(color) => {
-                                            updateCustomRule(rule.id, 'bgColor', color);
-                                            setTimeout(saveCustomRule, 100);
+                                            updateCustomRule(rule.id, 'bgColor', color, true);
                                         }}
                                         onReset={() => {
-                                            updateCustomRule(rule.id, 'bgColor', null);
-                                            setTimeout(saveCustomRule, 100);
+                                            updateCustomRule(rule.id, 'bgColor', null, true);
                                         }}
                                         type="bg"
                                     />

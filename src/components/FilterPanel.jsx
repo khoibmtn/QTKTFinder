@@ -228,6 +228,7 @@ const FilterPanel = ({
                                 )
                             ))}
                         </div>
+                        <p className="hint-text">Mở "Hướng dẫn XD QTKT" bên trên để xem cách tải QTKT tìm được</p>
                     </div>
                 )}
             </div>

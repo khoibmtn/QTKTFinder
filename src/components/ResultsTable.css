@@ -196,6 +196,18 @@
     font-weight: 700;
 }
 
+/* Folder link style */
+.folder-link {
+    color: #2563eb;
+    font-weight: 700;
+    text-decoration: underline;
+    cursor: pointer;
+}
+
+.folder-link:hover {
+    color: #1d4ed8;
+}
+
 /* Clickable rows */
 .clickable-row {
     cursor: pointer;

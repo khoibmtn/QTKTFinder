@@ -7,9 +7,11 @@ const ResultsTable = ({ data, loading, chuyenkhoaFilter, searchQuery }) => {
     const [colorRules, setColorRules] = useState(null);
     const [sortConfig, setSortConfig] = useState({ key: null, direction: null });
     const [selectedRecord, setSelectedRecord] = useState(null);
+    const [quickLinks, setQuickLinks] = useState({});
 
     useEffect(() => {
         loadColorRules();
+        loadQuickLinks();
     }, []);
 
     const loadColorRules = async () => {
@@ -21,6 +23,18 @@ const ResultsTable = ({ data, loading, chuyenkhoaFilter, searchQuery }) => {
             }
         } catch (error) {
             console.error('Error loading color rules:', error);
+        }
+    };
+
+    const loadQuickLinks = async () => {
+        try {
+            const docRef = doc(db, 'settings', 'quickLinks');
+            const docSnap = await getDoc(docRef);
+            if (docSnap.exists()) {
+                setQuickLinks(docSnap.data());
+            }
+        } catch (error) {
+            console.error('Error loading quick links:', error);
         }
     };
 
@@ -134,7 +148,17 @@ const ResultsTable = ({ data, loading, chuyenkhoaFilter, searchQuery }) => {
 
             return (
                 <>
-                    . Mở link thư mục QTKT BYT, BV ở bên tay trái, truy cập thư mục{' '}
+                    . Mở link{' '}
+                    <a
+                        href={quickLinks.thumuc || '#'}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="folder-link"
+                        onClick={(e) => e.stopPropagation()}
+                    >
+                        Thư mục QTKT BYT, BV
+                    </a>{' '}
+                    ở bên tay trái, truy cập thư mục{' '}
                     <span className="red-bold">BV xây dựng năm 2025</span>, sau đó tìm file{' '}
                     <span className="red-bold">{fileName}</span> và tải xuống, tìm quy trình số{' '}
                     <span className="red-bold">{stt}</span>
@@ -148,7 +172,17 @@ const ResultsTable = ({ data, loading, chuyenkhoaFilter, searchQuery }) => {
 
             return (
                 <>
-                    . Mở link thư mục QTKT BYT, BV ở bên tay trái, truy cập thư mục{' '}
+                    . Mở link{' '}
+                    <a
+                        href={quickLinks.thumuc || '#'}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="folder-link"
+                        onClick={(e) => e.stopPropagation()}
+                    >
+                        Thư mục QTKT BYT, BV
+                    </a>{' '}
+                    ở bên tay trái, truy cập thư mục{' '}
                     <span className="red-bold">QTKT CHUẨN MỚI</span>, mở thư mục WORD (hoặc PDF nếu trong thư mục WORD không có), sau đó tìm file{' '}
                     <span className="red-bold">{fileName}</span> và tải xuống, tìm quy trình có số thứ tự{' '}
                     <span className="red-bold">{stt}</span>
@@ -161,7 +195,17 @@ const ResultsTable = ({ data, loading, chuyenkhoaFilter, searchQuery }) => {
 
         return (
             <>
-                . Căn cứ vào tên quy trình và chuyên khoa, hãy mở link thư mục QTKT BYT, BV ở bên tay trái, truy cập thư mục{' '}
+                . Căn cứ vào tên quy trình và chuyên khoa, hãy mở link{' '}
+                <a
+                    href={quickLinks.thumuc || '#'}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="folder-link"
+                    onClick={(e) => e.stopPropagation()}
+                >
+                    Thư mục QTKT BYT, BV
+                </a>{' '}
+                ở bên tay trái, truy cập thư mục{' '}
                 <span className="red-bold">QTKT CHUẨN CŨ</span>, mở thư mục chuyên khoa liên quan nhất và tìm quyết định{' '}
                 <span className="red-bold">{soQD}</span>
             </>

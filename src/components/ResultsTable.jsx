@@ -119,11 +119,24 @@ const ResultsTable = ({ data, loading, chuyenkhoaFilter, searchQuery }) => {
         return match ? match[1] : '';
     };
 
-    // Extract year from qdbanhanh
+    // Extract year from qdbanhanh - e.g. "QĐ số: 7034/QĐ-BYT ngày 21/11/2018" => "2018"
+    // Prioritize: "năm 2018" or date format "dd/mm/yyyy" or "ngày X tháng Y năm Z"
     const extractYear = (qdbanhanh) => {
         if (!qdbanhanh) return '';
-        const match = qdbanhanh.match(/năm\s*(\d{4})/i) || qdbanhanh.match(/(\d{4})/);
-        return match ? match[1] : '';
+
+        // Try "năm YYYY" format first
+        let match = qdbanhanh.match(/năm\s*(\d{4})/i);
+        if (match) return match[1];
+
+        // Try date format dd/mm/yyyy
+        match = qdbanhanh.match(/\d{1,2}\/\d{1,2}\/(\d{4})/);
+        if (match) return match[1];
+
+        // Try format "ngày X tháng Y năm YYYY"
+        match = qdbanhanh.match(/tháng\s*\d{1,2}\s*năm\s*(\d{4})/i);
+        if (match) return match[1];
+
+        return '';
     };
 
     // Render guidance line based on selected record

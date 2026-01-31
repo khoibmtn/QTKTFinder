@@ -182,7 +182,12 @@ const FilterPanel = ({
                         </div>
                         <span className="toggle-label">Tìm kiếm tức thời</span>
                     </label>
-                    <p className="hint-text">Tắt tìm kiếm tức thời nếu mạng bị treo, hiện kết quả chậm</p>
+                    <p className="hint-text">
+                        {isInstantSearch
+                            ? 'Tắt tìm kiếm tức thời nếu mạng bị treo, hiện kết quả chậm'
+                            : 'Tắt tìm kiếm tức thời nếu mạng bị treo, hiện kết quả chậm. Bấm biểu tượng kính lúp hoặc Enter để thực hiện tìm kiếm'
+                        }
+                    </p>
                 </div>
 
                 <div className="filter-group">

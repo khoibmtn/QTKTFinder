@@ -61,21 +61,22 @@
     height: 36px;
     border-radius: 8px;
     border: none;
-    background: linear-gradient(135deg, #3b82f6, #2563eb);
-    color: white;
-    font-size: 1.1rem;
+    background: transparent;
+    color: #4f68f6;
     cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
-    box-shadow: 0 2px 6px rgba(37, 99, 235, 0.3);
     transition: all 0.2s;
 }
 
 .btn-settings-header:hover {
-    background: linear-gradient(135deg, #2563eb, #1d4ed8);
+    background: rgba(79, 104, 246, 0.1);
     transform: scale(1.1);
-    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.4);
+}
+
+.btn-settings-header svg {
+    stroke: #4f68f6;
 }
 
 /* Password Modal (shared with FilterPanel but also needed here) */

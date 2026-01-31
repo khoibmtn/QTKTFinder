@@ -5,8 +5,8 @@ import './ResultsTable.css';
 
 const ResultsTable = ({ data, loading, chuyenkhoaFilter, searchQuery }) => {
     const [colorRules, setColorRules] = useState(null);
-    // null = no sort, 'asc' = ascending, 'desc' = descending
     const [sortConfig, setSortConfig] = useState({ key: null, direction: null });
+    const [selectedRecord, setSelectedRecord] = useState(null);
 
     useEffect(() => {
         loadColorRules();
@@ -50,7 +50,6 @@ const ResultsTable = ({ data, loading, chuyenkhoaFilter, searchQuery }) => {
 
         if (matches.length === 0) return text;
 
-        // Sort and merge overlapping matches
         matches.sort((a, b) => a.start - b.start);
         const mergedMatches = [];
         for (const match of matches) {
@@ -59,7 +58,6 @@ const ResultsTable = ({ data, loading, chuyenkhoaFilter, searchQuery }) => {
             }
         }
 
-        // Build result with highlights
         const parts = [];
         let lastIndex = 0;
 
@@ -81,6 +79,101 @@ const ResultsTable = ({ data, loading, chuyenkhoaFilter, searchQuery }) => {
         }
 
         return parts;
+    };
+
+    // Extract STT (number) from tenqtkt - e.g. "53. ADA (adenosine deaminase)" => "53"
+    const extractSTT = (tenqtkt) => {
+        if (!tenqtkt) return '';
+        const match = tenqtkt.match(/^(\d+)/);
+        return match ? match[1] : '';
+    };
+
+    // Extract chapter number and name from chuyenkhoa - e.g. "23. HÓA SINH" => { num: "23", name: "HÓA SINH" }
+    const extractChapterInfo = (chuyenkhoa) => {
+        if (!chuyenkhoa) return { num: '', name: chuyenkhoa };
+        const match = chuyenkhoa.match(/^(\d+)\.\s*(.+)$/);
+        if (match) {
+            return { num: match[1], name: match[2] };
+        }
+        return { num: '', name: chuyenkhoa };
+    };
+
+    // Extract QD number from qdbanhanh - e.g. "QĐ số: 2633/QĐ-BYT ngày 19 tháng 8 năm 2025" => "2633"
+    const extractQDNumber = (qdbanhanh) => {
+        if (!qdbanhanh) return '';
+        const match = qdbanhanh.match(/(\d+)\/QĐ/i) || qdbanhanh.match(/(\d+)/);
+        return match ? match[1] : '';
+    };
+
+    // Extract year from qdbanhanh
+    const extractYear = (qdbanhanh) => {
+        if (!qdbanhanh) return '';
+        const match = qdbanhanh.match(/năm\s*(\d{4})/i) || qdbanhanh.match(/(\d{4})/);
+        return match ? match[1] : '';
+    };
+
+    // Render guidance line based on selected record
+    const renderGuidanceLine = () => {
+        if (!selectedRecord) return null;
+
+        const qdbanhanh = selectedRecord.qdbanhanh || '';
+        const chuyenkhoa = selectedRecord.chuyenkhoa || '';
+        const tenqtkt = selectedRecord.tenqtkt || '';
+        const chuanqtkt = (selectedRecord.chuanqtkt || '').toLowerCase();
+
+        const stt = extractSTT(tenqtkt);
+        const chapterInfo = extractChapterInfo(chuyenkhoa);
+        const qdNumber = extractQDNumber(qdbanhanh);
+        const year = extractYear(qdbanhanh);
+
+        // Case 1: Số QĐ Ban hành contains "BV xây dựng năm 2025"
+        if (qdbanhanh.toLowerCase().includes('bv xây dựng') || qdbanhanh.toLowerCase().includes('bv xay dung')) {
+            const fileName = chapterInfo.num
+                ? `CHƯƠNG ${chapterInfo.num}. ${chapterInfo.name}.docx`
+                : `${chuyenkhoa}.docx`;
+
+            return (
+                <>
+                    . Mở link thư mục QTKT BYT, BV ở bên tay trái, truy cập thư mục{' '}
+                    <span className="red-bold">BV xây dựng năm 2025</span>, sau đó tìm file{' '}
+                    <span className="red-bold">{fileName}</span> và tải xuống, tìm quy trình số{' '}
+                    <span className="red-bold">{stt}</span>
+                </>
+            );
+        }
+
+        // Case 2: Chuẩn mới
+        if (chuanqtkt.includes('chuẩn mới') || chuanqtkt.includes('chuan moi')) {
+            const fileName = `QĐ ${qdNumber} Hướng dẫn QTKT ${chapterInfo.name}`;
+
+            return (
+                <>
+                    . Mở link thư mục QTKT BYT, BV ở bên tay trái, truy cập thư mục{' '}
+                    <span className="red-bold">QTKT CHUẨN MỚI</span>, mở thư mục WORD (hoặc PDF nếu trong thư mục WORD không có), sau đó tìm file{' '}
+                    <span className="red-bold">{fileName}</span> và tải xuống, tìm quy trình có số thứ tự{' '}
+                    <span className="red-bold">{stt}</span>
+                </>
+            );
+        }
+
+        // Case 3: Chuẩn cũ (default)
+        const soQD = qdNumber && year ? `số ${qdNumber} năm ${year}` : qdbanhanh;
+
+        return (
+            <>
+                . Căn cứ vào tên quy trình và chuyên khoa, hãy mở link thư mục QTKT BYT, BV ở bên tay trái, truy cập thư mục{' '}
+                <span className="red-bold">QTKT CHUẨN CŨ</span>, mở thư mục chuyên khoa liên quan nhất và tìm quyết định{' '}
+                <span className="red-bold">{soQD}</span>
+            </>
+        );
+    };
+
+    const handleRowClick = (record) => {
+        if (selectedRecord?.id === record.id) {
+            setSelectedRecord(null);
+        } else {
+            setSelectedRecord(record);
+        }
     };
 
     const getRowStyle = (record) => {
@@ -131,17 +224,14 @@ const ResultsTable = ({ data, loading, chuyenkhoaFilter, searchQuery }) => {
         return style;
     };
 
-    // 3-state sorting: asc → desc → null (reset)
     const handleSort = (key) => {
         setSortConfig(prev => {
             if (prev.key !== key) {
-                // New column, start with ascending
                 return { key, direction: 'asc' };
             }
             if (prev.direction === 'asc') {
                 return { key, direction: 'desc' };
             }
-            // Reset to no sorting
             return { key: null, direction: null };
         });
     };
@@ -159,17 +249,14 @@ const ResultsTable = ({ data, loading, chuyenkhoaFilter, searchQuery }) => {
         });
     };
 
-    // Sort icon component with clear state indication
     const SortIcon = ({ columnKey }) => {
         const isActive = sortConfig.key === columnKey;
         const direction = sortConfig.direction;
 
         if (!isActive) {
-            // Show neutral double arrow for inactive columns
             return <span className="sort-icon inactive">⇅</span>;
         }
 
-        // Show active arrow based on direction
         return (
             <span className="sort-icon active">
                 {direction === 'asc' ? '▲' : '▼'}
@@ -209,7 +296,10 @@ const ResultsTable = ({ data, loading, chuyenkhoaFilter, searchQuery }) => {
     return (
         <div className="results-container">
             <div className="results-header">
-                <h3>Kết quả: <span className="count">{data.length}</span> quy trình</h3>
+                <p className="results-info">
+                    Kết quả: <span className="blue-bold">{data.length}</span> quy trình
+                    {renderGuidanceLine()}
+                </p>
             </div>
 
             <div className="table-wrapper">
@@ -229,7 +319,12 @@ const ResultsTable = ({ data, loading, chuyenkhoaFilter, searchQuery }) => {
                     </thead>
                     <tbody>
                         {sortedData.map((record) => (
-                            <tr key={record.id} style={getRowStyle(record)}>
+                            <tr
+                                key={record.id}
+                                style={getRowStyle(record)}
+                                onClick={() => handleRowClick(record)}
+                                className={`clickable-row ${selectedRecord?.id === record.id ? 'selected' : ''}`}
+                            >
                                 <td>{record.qdbanhanh}</td>
                                 <td>{record.chuyenkhoa}</td>
                                 <td>{highlightText(record.tenqtkt)}</td>

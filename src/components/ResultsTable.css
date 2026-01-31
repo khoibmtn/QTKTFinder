@@ -7,25 +7,17 @@
 }
 
 .results-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 0.5rem 1rem;
+    padding: 0.75rem 1rem;
     flex-shrink: 0;
     background: white;
     border-bottom: 1px solid var(--border-color);
 }
 
-.results-header h3 {
+.results-info {
     margin: 0;
-    font-size: 0.9rem;
+    font-size: 0.85rem;
     color: var(--text-primary);
-    font-weight: 600;
-}
-
-.count {
-    color: var(--primary-color);
-    font-weight: 700;
+    line-height: 1.5;
 }
 
 /* Table wrapper with scroll - scroll starts from first data row */
@@ -190,4 +182,27 @@
     padding: 0 2px;
     border-radius: 2px;
     color: inherit;
+}
+
+/* Red and bold text for highlighted values */
+.red-bold {
+    color: #dc2626;
+    font-weight: 700;
+}
+
+/* Blue and bold text for count */
+.blue-bold {
+    color: #2563eb;
+    font-weight: 700;
+}
+
+/* Clickable rows */
+.clickable-row {
+    cursor: pointer;
+}
+
+.clickable-row.selected {
+    background-color: #dbeafe !important;
+    outline: 2px solid #3b82f6;
+    outline-offset: -2px;
 }

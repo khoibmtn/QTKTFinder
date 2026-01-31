@@ -15,6 +15,10 @@ function HomePage() {
         setChuanQTKTFilter,
         chuyenkhoaFilter,
         setChuyenkhoaFilter,
+        searchMethod,
+        setSearchMethod,
+        isInstantSearch,
+        setIsInstantSearch,
         filteredData
     } = useSearch(records);
 
@@ -30,6 +34,10 @@ function HomePage() {
                         onChuanQTKTChange={setChuanQTKTFilter}
                         chuyenkhoa={chuyenkhoaFilter}
                         onChuyenkhoaChange={setChuyenkhoaFilter}
+                        searchMethod={searchMethod}
+                        onSearchMethodChange={setSearchMethod}
+                        isInstantSearch={isInstantSearch}
+                        onInstantSearchChange={setIsInstantSearch}
                     />
                 </aside>
 
@@ -49,3 +57,4 @@ function HomePage() {
 }
 
 export default HomePage;
+

@@ -14,32 +14,67 @@
 }
 
 .filter-title {
-    font-size: 1.1rem;
+    font-size: 1rem;
     font-weight: 700;
     color: var(--text-primary);
     margin: 0;
+    letter-spacing: 0.5px;
 }
 
-.btn-config-icon {
-    width: 32px;
-    height: 32px;
-    border-radius: 8px;
-    border: none;
-    background: linear-gradient(135deg, #3b82f6, #2563eb);
-    color: white;
-    font-size: 1rem;
-    cursor: pointer;
+/* Search Method Dropdown */
+.search-method-dropdown {
     display: flex;
     align-items: center;
-    justify-content: center;
-    box-shadow: 0 2px 6px rgba(37, 99, 235, 0.3);
-    transition: all 0.2s;
+    gap: 0.25rem;
+    position: relative;
 }
 
-.btn-config-icon:hover {
-    background: linear-gradient(135deg, #2563eb, #1d4ed8);
-    transform: scale(1.1);
-    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.4);
+.search-method-select {
+    padding: 0.35rem 0.5rem;
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    font-size: 0.8rem;
+    background-color: var(--white);
+    color: var(--text-secondary);
+    cursor: pointer;
+    min-width: 80px;
+}
+
+.search-method-select:focus {
+    outline: none;
+    border-color: var(--primary-color);
+}
+
+.search-method-tooltip {
+    position: relative;
+    display: inline-flex;
+}
+
+.tooltip-icon {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    cursor: help;
+}
+
+.tooltip-content {
+    display: none;
+    position: absolute;
+    top: 100%;
+    right: 0;
+    margin-top: 0.5rem;
+    background: #1e293b;
+    color: white;
+    padding: 0.75rem;
+    border-radius: 8px;
+    font-size: 0.75rem;
+    white-space: pre-line;
+    min-width: 220px;
+    z-index: 100;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.search-method-tooltip:hover .tooltip-content {
+    display: block;
 }
 
 .filter-content {
@@ -198,65 +233,68 @@
     background-color: var(--primary-hover);
 }
 
-/* Checkbox Styling */
-.checkbox-container {
+/* Toggle Switch Styling */
+.toggle-group {
+    gap: 0.35rem;
+}
+
+.toggle-container {
     display: flex;
     align-items: center;
+    gap: 0.75rem;
+    cursor: pointer;
+}
+
+.toggle-switch {
     position: relative;
-    padding-left: 28px;
-    cursor: pointer;
-    font-size: 0.9rem;
-    user-select: none;
-    color: var(--text-primary);
+    width: 48px;
+    height: 26px;
+    flex-shrink: 0;
 }
 
-.checkbox-container input {
-    position: absolute;
+.toggle-switch input {
     opacity: 0;
-    cursor: pointer;
-    height: 0;
     width: 0;
+    height: 0;
 }
 
-.checkmark {
+.toggle-slider {
     position: absolute;
+    cursor: pointer;
     top: 0;
     left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, #e2e8f0, #cbd5e1);
+    transition: 0.3s;
+    border-radius: 26px;
+}
+
+.toggle-slider:before {
+    position: absolute;
+    content: "";
     height: 20px;
     width: 20px;
-    background-color: var(--white);
-    border: 1px solid var(--border-color);
-    border-radius: 4px;
-    transition: all 0.2s;
+    left: 3px;
+    bottom: 3px;
+    background-color: white;
+    transition: 0.3s;
+    border-radius: 50%;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
 }
 
-.checkbox-container:hover input~.checkmark {
-    background-color: #f1f5f9;
+.toggle-switch input:checked+.toggle-slider {
+    background: linear-gradient(135deg, #818cf8, #6366f1);
 }
 
-.checkbox-container input:checked~.checkmark {
-    background-color: var(--primary-color);
-    border-color: var(--primary-color);
+.toggle-switch input:checked+.toggle-slider:before {
+    transform: translateX(22px);
 }
 
-.checkmark:after {
-    content: "";
-    position: absolute;
-    display: none;
-}
-
-.checkbox-container input:checked~.checkmark:after {
-    display: block;
-}
-
-.checkbox-container .checkmark:after {
-    left: 7px;
-    top: 3px;
-    width: 5px;
-    height: 10px;
-    border: solid white;
-    border-width: 0 2px 2px 0;
-    transform: rotate(45deg);
+.toggle-label {
+    font-size: 0.9rem;
+    color: var(--text-primary);
+    font-weight: 500;
 }
 
 /* Hint text */
@@ -400,9 +438,9 @@
 .quick-link-btn {
     display: flex;
     align-items: center;
-    gap: 0.5rem;
-    padding: 0.6rem 0.75rem;
-    background: linear-gradient(145deg, #f8fafc, #e2e8f0);
+    gap: 0.75rem;
+    padding: 0.75rem 1rem;
+    background: var(--white);
     border: 1px solid var(--border-color);
     border-radius: var(--radius-md);
     color: var(--text-primary);
@@ -413,8 +451,17 @@
 }
 
 .quick-link-btn:hover {
-    background: linear-gradient(145deg, #e2e8f0, #cbd5e1);
+    background: #f8fafc;
     border-color: var(--primary-color);
-    color: var(--primary-color);
     transform: translateX(2px);
+}
+
+.quick-link-icon {
+    font-size: 1.1rem;
+    width: 24px;
+    text-align: center;
+}
+
+.quick-link-text {
+    flex: 1;
 }

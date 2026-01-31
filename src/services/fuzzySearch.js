@@ -14,6 +14,13 @@ const fuseOptions = {
     shouldSort: true
 };
 
+// Search method types
+export const SEARCH_METHODS = {
+    FLEXIBLE: 'flexible',    // Linh hoạt - words in any order
+    SEQUENTIAL: 'sequential', // Tuần tự - words in order
+    EXACT: 'exact'           // Chính xác - exact phrase
+};
+
 // Create fuzzy search instance
 export const createFuzzySearch = (data) => {
     return new Fuse(data, fuseOptions);
@@ -28,11 +35,11 @@ export const fuzzySearch = (fuse, query) => {
 };
 
 /**
- * WORD-based fuzzy match
- * Searches for words (not characters) within the text.
- * Each word in the pattern must be found as a substring in the text.
+ * FLEXIBLE (Linh hoạt) - Words in any order
+ * All words must exist but order doesn't matter
+ * "nội soi" matches "*nội*soi*" and "*soi*nội*"
  */
-export const fuzzyMatch = (text, pattern) => {
+export const flexibleMatch = (text, pattern) => {
     if (!pattern || !text) return false;
 
     const textLower = text.toLowerCase();
@@ -44,6 +51,53 @@ export const fuzzyMatch = (text, pattern) => {
         return textLower.includes(word);
     });
 };
+
+/**
+ * SEQUENTIAL (Tuần tự) - Words must appear in order
+ * "nội soi" matches "*nội*soi*" but NOT "*soi*nội*"
+ */
+export const sequentialMatch = (text, pattern) => {
+    if (!pattern || !text) return false;
+
+    const textLower = text.toLowerCase();
+    const patternWords = pattern.toLowerCase().trim().split(/\s+/);
+
+    let lastIndex = -1;
+    return patternWords.every(word => {
+        if (word.length === 0) return true;
+        const index = textLower.indexOf(word, lastIndex + 1);
+        if (index === -1) return false;
+        lastIndex = index;
+        return true;
+    });
+};
+
+/**
+ * EXACT (Chính xác) - Exact phrase must appear
+ * "nội soi" matches "*nội soi*" only (the exact phrase with space)
+ */
+export const exactMatch = (text, pattern) => {
+    if (!pattern || !text) return false;
+    return text.toLowerCase().includes(pattern.toLowerCase().trim());
+};
+
+/**
+ * Unified match function based on search method
+ */
+export const matchByMethod = (text, pattern, method = SEARCH_METHODS.FLEXIBLE) => {
+    switch (method) {
+        case SEARCH_METHODS.SEQUENTIAL:
+            return sequentialMatch(text, pattern);
+        case SEARCH_METHODS.EXACT:
+            return exactMatch(text, pattern);
+        case SEARCH_METHODS.FLEXIBLE:
+        default:
+            return flexibleMatch(text, pattern);
+    }
+};
+
+// Legacy alias for backward compatibility
+export const fuzzyMatch = flexibleMatch;
 
 // Highlight matched text
 export const highlightMatches = (text, matches) => {

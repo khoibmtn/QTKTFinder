@@ -1,10 +1,8 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { doc, getDoc } from 'firebase/firestore';
 import { db } from '../services/firebase';
+import { SEARCH_METHODS } from '../services/fuzzySearch';
 import './FilterPanel.css';
-
-const CONFIG_PASSWORD = '123456';
 
 const QUICK_LINK_LABELS = {
     xaydung: 'Xây dựng QTKT',
@@ -13,20 +11,44 @@ const QUICK_LINK_LABELS = {
     nhanqtkt: 'Thư mục nhận QTKT'
 };
 
+const QUICK_LINK_ICONS = {
+    xaydung: '🔗',
+    huongdan: '❓',
+    thumuc: '📁',
+    nhanqtkt: '📥'
+};
+
+const SEARCH_METHOD_OPTIONS = [
+    {
+        value: SEARCH_METHODS.FLEXIBLE,
+        label: 'Linh hoạt',
+        tooltip: 'Tìm tất cả các từ, không cần theo thứ tự. Cho nhiều kết quả tìm kiếm nhất.\nVD: "nội soi" khớp với "phẫu thuật nội soi" và "soi kiểm tra nội khoa"'
+    },
+    {
+        value: SEARCH_METHODS.SEQUENTIAL,
+        label: 'Tuần tự',
+        tooltip: 'Các từ phải xuất hiện đúng thứ tự nhập.\nVD: "nội soi" khớp với "nội khoa soi dạ dày" nhưng KHÔNG khớp "soi nội khoa"'
+    },
+    {
+        value: SEARCH_METHODS.EXACT,
+        label: 'Chính xác',
+        tooltip: 'Tìm cụm từ chính xác, không tách rời. Ít kết quả hơn nhưng chính xác hơn.\nVD: "nội soi" chỉ khớp với "phẫu thuật nội soi ổ bụng"'
+    }
+];
+
 const FilterPanel = ({
     searchValue,
     onSearchChange,
     chuanQTKT,
     onChuanQTKTChange,
     chuyenkhoa,
-    onChuyenkhoaChange
+    onChuyenkhoaChange,
+    searchMethod,
+    onSearchMethodChange,
+    isInstantSearch,
+    onInstantSearchChange
 }) => {
-    const navigate = useNavigate();
     const [inputValue, setInputValue] = useState(searchValue || '');
-    const [isInstantSearch, setIsInstantSearch] = useState(true);
-    const [showPasswordModal, setShowPasswordModal] = useState(false);
-    const [passwordInput, setPasswordInput] = useState('');
-    const [passwordError, setPasswordError] = useState('');
     const [quickLinks, setQuickLinks] = useState({});
 
     // Load quick links from Firestore
@@ -77,35 +99,33 @@ const FilterPanel = ({
         onChuyenkhoaChange('');
     };
 
-    const handleConfigClick = () => {
-        setShowPasswordModal(true);
-        setPasswordInput('');
-        setPasswordError('');
-    };
-
-    const handlePasswordSubmit = (e) => {
-        e.preventDefault();
-        if (passwordInput === CONFIG_PASSWORD) {
-            setShowPasswordModal(false);
-            navigate('/admin');
-        } else {
-            setPasswordError('Mật khẩu không đúng!');
-        }
-    };
-
-    const handleModalClose = () => {
-        setShowPasswordModal(false);
-        setPasswordInput('');
-        setPasswordError('');
-    };
-
     return (
         <div className="filter-panel">
             <div className="filter-header">
-                <h3 className="filter-title">Bộ lọc tìm kiếm</h3>
-                <button type="button" className="btn-config-icon" onClick={handleConfigClick} title="Cấu hình">
-                    ⚙️
-                </button>
+                <h3 className="filter-title">TÌM KIẾM</h3>
+                <div className="search-method-dropdown">
+                    <select
+                        value={searchMethod}
+                        onChange={(e) => onSearchMethodChange(e.target.value)}
+                        className="search-method-select"
+                    >
+                        {SEARCH_METHOD_OPTIONS.map(option => (
+                            <option
+                                key={option.value}
+                                value={option.value}
+                                title={option.tooltip}
+                            >
+                                {option.label}
+                            </option>
+                        ))}
+                    </select>
+                    <div className="search-method-tooltip">
+                        <span className="tooltip-icon">ⓘ</span>
+                        <div className="tooltip-content">
+                            {SEARCH_METHOD_OPTIONS.find(o => o.value === searchMethod)?.tooltip}
+                        </div>
+                    </div>
+                </div>
             </div>
 
             <div className="filter-content">
@@ -149,21 +169,24 @@ const FilterPanel = ({
                     </div>
                 </div>
 
-                <div className="filter-group checkbox-group">
-                    <label className="checkbox-container">
-                        <input
-                            type="checkbox"
-                            checked={isInstantSearch}
-                            onChange={(e) => setIsInstantSearch(e.target.checked)}
-                        />
-                        <span className="checkmark"></span>
-                        <span className="checkbox-label">Tìm kiếm tức thời</span>
+                {/* Toggle Switch for Instant Search */}
+                <div className="filter-group toggle-group">
+                    <label className="toggle-container">
+                        <div className="toggle-switch">
+                            <input
+                                type="checkbox"
+                                checked={isInstantSearch}
+                                onChange={(e) => onInstantSearchChange(e.target.checked)}
+                            />
+                            <span className="toggle-slider"></span>
+                        </div>
+                        <span className="toggle-label">Tìm kiếm tức thời</span>
                     </label>
-                    <p className="hint-text">Tắt tìm kiếm tức thời nếu trang bị treo, hiện kết quả chậm</p>
+                    <p className="hint-text">Tắt tìm kiếm tức thời nếu mạng bị treo, hiện kết quả chậm</p>
                 </div>
 
                 <div className="filter-group">
-                    <label htmlFor="chuan-qtkt" className="filter-label">Chuẩn QTKT:</label>
+                    <label htmlFor="chuan-qtkt" className="filter-label">CHUẨN QTKT:</label>
                     <select
                         id="chuan-qtkt"
                         value={chuanQTKT}
@@ -177,7 +200,7 @@ const FilterPanel = ({
                 </div>
 
                 <div className="filter-group">
-                    <label htmlFor="chuyenkhoa" className="filter-label">Chuyên khoa:</label>
+                    <label htmlFor="chuyenkhoa" className="filter-label">CHUYÊN KHOA:</label>
                     <div className="input-with-clear">
                         <input
                             id="chuyenkhoa"
@@ -203,16 +226,12 @@ const FilterPanel = ({
                     )}
                 </div>
 
-                {!isInstantSearch && (
-                    <button className="btn-search" onClick={handleSearchTrigger}>
-                        Tìm kiếm
-                    </button>
-                )}
+
 
                 {/* Quick Access Links */}
                 {Object.keys(quickLinks).some(key => quickLinks[key]) && (
                     <div className="quick-access-section">
-                        <h4 className="quick-access-title">Truy cập nhanh</h4>
+                        <h4 className="quick-access-title">TRUY CẬP NHANH</h4>
                         <div className="quick-access-links">
                             {Object.entries(quickLinks).map(([key, url]) => (
                                 url && (
@@ -223,7 +242,8 @@ const FilterPanel = ({
                                         rel="noopener noreferrer"
                                         className="quick-link-btn"
                                     >
-                                        🔗 {QUICK_LINK_LABELS[key] || key}
+                                        <span className="quick-link-icon">{QUICK_LINK_ICONS[key] || '🔗'}</span>
+                                        <span className="quick-link-text">{QUICK_LINK_LABELS[key] || key}</span>
                                     </a>
                                 )
                             ))}
@@ -232,37 +252,8 @@ const FilterPanel = ({
                     </div>
                 )}
             </div>
-
-            {/* Password Modal */}
-            {showPasswordModal && (
-                <div className="password-modal-overlay" onClick={handleModalClose}>
-                    <div className="password-modal" onClick={(e) => e.stopPropagation()}>
-                        <h4>🔐 Nhập mật khẩu</h4>
-                        <form onSubmit={handlePasswordSubmit}>
-                            <input
-                                type="password"
-                                value={passwordInput}
-                                onChange={(e) => setPasswordInput(e.target.value)}
-                                placeholder="Nhập mật khẩu..."
-                                autoFocus
-                                className="password-input"
-                            />
-                            {passwordError && <p className="password-error">{passwordError}</p>}
-                            <div className="password-modal-actions">
-                                <button type="button" className="btn-cancel" onClick={handleModalClose}>
-                                    Hủy
-                                </button>
-                                <button type="submit" className="btn-submit">
-                                    Xác nhận
-                                </button>
-                            </div>
-                        </form>
-                    </div>
-                </div>
-            )}
         </div>
     );
 };
 
 export default FilterPanel;
-

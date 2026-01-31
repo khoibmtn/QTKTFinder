@@ -230,8 +230,8 @@ const ResultsTable = ({ data, loading, chuyenkhoaFilter, searchQuery }) => {
                     <tbody>
                         {sortedData.map((record) => (
                             <tr key={record.id} style={getRowStyle(record)}>
-                                <td>{highlightText(record.qdbanhanh)}</td>
-                                <td>{highlightText(record.chuyenkhoa)}</td>
+                                <td>{record.qdbanhanh}</td>
+                                <td>{record.chuyenkhoa}</td>
                                 <td>{highlightText(record.tenqtkt)}</td>
                             </tr>
                         ))}

@@ -146,16 +146,46 @@
 .data-table th {
     background: #3a4a6b;
     color: white;
-    padding: 0.75rem 1rem;
+    padding: 0.6rem 0.75rem;
     text-align: left;
     font-weight: 600;
     font-size: 0.85rem;
+    white-space: nowrap;
 }
 
 .data-table td {
-    padding: 0.75rem 1rem;
+    padding: 0.5rem 0.75rem;
+    font-size: 0.85rem;
+    vertical-align: top;
+}
+
+/* Column widths */
+.data-table th:nth-child(1),
+.data-table td:nth-child(1) {
+    width: 180px;
+    min-width: 180px;
+}
+
+.data-table th:nth-child(2),
+.data-table td:nth-child(2) {
+    width: auto;
+}
+
+.data-table th:nth-child(3),
+.data-table td:nth-child(3) {
+    width: 100px;
+    min-width: 100px;
+    white-space: nowrap;
+}
+
+.data-table th:nth-child(4),
+.data-table td:nth-child(4) {
+    width: 90px;
+    min-width: 90px;
+}
+
+.data-table tbody tr {
     border-bottom: 1px solid #e0e0e0;
-    font-size: 0.9rem;
 }
 
 .data-table tbody tr:nth-child(odd) {

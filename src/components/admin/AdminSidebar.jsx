@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom';
 import './AdminSidebar.css';
 
 const AdminSidebar = ({ activeTab, onTabChange }) => {
@@ -28,6 +29,11 @@ const AdminSidebar = ({ activeTab, onTabChange }) => {
                         <span className="nav-label">{item.label}</span>
                     </button>
                 ))}
+
+                <Link to="/" className="nav-item nav-back">
+                    <span className="nav-icon">←</span>
+                    <span className="nav-label">Quay lại tìm kiếm</span>
+                </Link>
             </nav>
         </aside>
     );

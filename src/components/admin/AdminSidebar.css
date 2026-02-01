@@ -75,3 +75,9 @@
 .nav-label {
     flex: 1;
 }
+
+/* Back Link */
+.nav-back {
+    text-decoration: none;
+    margin-top: 0.25rem;
+}

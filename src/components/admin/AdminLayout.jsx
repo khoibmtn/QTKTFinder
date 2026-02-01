@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Link, useSearchParams } from 'react-router-dom';
+import { useSearchParams } from 'react-router-dom';
 import { doc, getDoc } from 'firebase/firestore';
 import { db } from '../../services/firebase';
 import AdminSidebar from './AdminSidebar';
@@ -78,11 +78,6 @@ const AdminLayout = () => {
         <div className="admin-layout">
             <AdminSidebar activeTab={activeTab} onTabChange={setActiveTab} />
             <div className="admin-main">
-                <header className="admin-topbar">
-                    <Link to="/" className="back-link">
-                        ← Quay lại tìm kiếm
-                    </Link>
-                </header>
                 <div className="admin-content">
                     {renderContent()}
                 </div>

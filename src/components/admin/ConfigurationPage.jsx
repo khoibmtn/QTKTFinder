@@ -130,13 +130,10 @@ const ConfigurationPage = ({ chuanQTKTOptions, setChuanQTKTOptions }) => {
     const [newChuanName, setNewChuanName] = useState('');
     const [editingChuan, setEditingChuan] = useState(null);
 
-    // Quick access links
-    const [quickLinks, setQuickLinks] = useState({
-        xaydung: '',
-        huongdan: '',
-        thumuc: '',
-        nhanqtkt: ''
-    });
+    // Quick access links - now array-based with id, name, url, icon
+    const [quickLinks, setQuickLinks] = useState([]);
+    const [newLinkName, setNewLinkName] = useState('');
+    const [newLinkUrl, setNewLinkUrl] = useState('');
 
     useEffect(() => {
         loadColorRules();
@@ -174,7 +171,34 @@ const ConfigurationPage = ({ chuanQTKTOptions, setChuanQTKTOptions }) => {
             const docRef = doc(db, 'settings', 'quickLinks');
             const docSnap = await getDoc(docRef);
             if (docSnap.exists()) {
-                setQuickLinks(docSnap.data());
+                const data = docSnap.data();
+                // Check if it's the new array format or old object format
+                if (Array.isArray(data.links)) {
+                    setQuickLinks(data.links);
+                } else {
+                    // Migrate old format to new format
+                    const oldLabels = {
+                        xaydung: 'Xây dựng QTKT',
+                        huongdan: 'Hướng dẫn XD QTKT',
+                        thumuc: 'Thư mục QTKT BYT, BV',
+                        nhanqtkt: 'Thư mục nhận QTKT'
+                    };
+                    const oldIcons = {
+                        xaydung: '🔗',
+                        huongdan: '❓',
+                        thumuc: '📁',
+                        nhanqtkt: '📥'
+                    };
+                    const migratedLinks = Object.entries(data)
+                        .filter(([key, url]) => url && typeof url === 'string')
+                        .map(([key, url]) => ({
+                            id: `link_${key}_${Date.now()}`,
+                            name: oldLabels[key] || key,
+                            url: url,
+                            icon: oldIcons[key] || '🔗'
+                        }));
+                    setQuickLinks(migratedLinks);
+                }
             }
         } catch (error) {
             console.error('Error loading quick links:', error);
@@ -183,7 +207,7 @@ const ConfigurationPage = ({ chuanQTKTOptions, setChuanQTKTOptions }) => {
 
     const saveQuickLinks = async (links) => {
         try {
-            await setDoc(doc(db, 'settings', 'quickLinks'), links);
+            await setDoc(doc(db, 'settings', 'quickLinks'), { links });
             setQuickLinks(links);
             setMessage('✅ Đã lưu cấu hình liên kết');
             setTimeout(() => setMessage(''), 3000);
@@ -193,12 +217,48 @@ const ConfigurationPage = ({ chuanQTKTOptions, setChuanQTKTOptions }) => {
         }
     };
 
-    const updateQuickLink = (key, value) => {
-        setQuickLinks(prev => ({ ...prev, [key]: value }));
+    const addQuickLink = () => {
+        if (!newLinkName.trim() || !newLinkUrl.trim()) {
+            setMessage('❌ Vui lòng nhập cả tên và URL');
+            return;
+        }
+        const newLink = {
+            id: `link_${Date.now()}`,
+            name: newLinkName.trim(),
+            url: newLinkUrl.trim(),
+            icon: '🔗'
+        };
+        const newLinks = [...quickLinks, newLink];
+        saveQuickLinks(newLinks);
+        setNewLinkName('');
+        setNewLinkUrl('');
     };
 
-    const handleSaveQuickLinks = () => {
+    const updateQuickLink = (id, field, value) => {
+        const newLinks = quickLinks.map(link =>
+            link.id === id ? { ...link, [field]: value } : link
+        );
+        setQuickLinks(newLinks);
+    };
+
+    const saveQuickLinkUpdate = () => {
         saveQuickLinks(quickLinks);
+    };
+
+    const deleteQuickLink = (id) => {
+        const newLinks = quickLinks.filter(link => link.id !== id);
+        saveQuickLinks(newLinks);
+    };
+
+    const moveQuickLink = (index, direction) => {
+        const newIndex = index + direction;
+        if (newIndex < 0 || newIndex >= quickLinks.length) return;
+
+        const newLinks = [...quickLinks];
+        const temp = newLinks[index];
+        newLinks[index] = newLinks[newIndex];
+        newLinks[newIndex] = temp;
+        saveQuickLinks(newLinks);
     };
 
     const saveChuanQTKTOptions = async (options) => {
@@ -516,47 +576,77 @@ const ConfigurationPage = ({ chuanQTKTOptions, setChuanQTKTOptions }) => {
                 {/* Section 5: Quick Access Links */}
                 <section className="config-section">
                     <h3>Liên kết truy cập nhanh</h3>
-                    <p className="section-desc">Cấu hình các đường link hiển thị ở trang tìm kiếm</p>
+                    <p className="section-desc">Cấu hình các đường link hiển thị ở trang tìm kiếm. Kéo thả để sắp xếp thứ tự.</p>
 
-                    <div className="quick-links-form">
-                        <div className="form-group">
-                            <label>Link Xây dựng QTKT</label>
-                            <input
-                                type="url"
-                                placeholder="https://..."
-                                value={quickLinks.xaydung || ''}
-                                onChange={(e) => updateQuickLink('xaydung', e.target.value)}
-                            />
-                        </div>
-                        <div className="form-group">
-                            <label>Link Hướng dẫn xây dựng QTKT</label>
-                            <input
-                                type="url"
-                                placeholder="https://..."
-                                value={quickLinks.huongdan || ''}
-                                onChange={(e) => updateQuickLink('huongdan', e.target.value)}
-                            />
-                        </div>
-                        <div className="form-group">
-                            <label>Link Thư mục các QTKT BYT, BV</label>
-                            <input
-                                type="url"
-                                placeholder="https://..."
-                                value={quickLinks.thumuc || ''}
-                                onChange={(e) => updateQuickLink('thumuc', e.target.value)}
-                            />
-                        </div>
-                        <div className="form-group">
-                            <label>Link Thư mục nhận QTKT</label>
-                            <input
-                                type="url"
-                                placeholder="https://..."
-                                value={quickLinks.nhanqtkt || ''}
-                                onChange={(e) => updateQuickLink('nhanqtkt', e.target.value)}
-                            />
-                        </div>
-                        <button onClick={handleSaveQuickLinks} className="btn-save">
-                            💾 Lưu liên kết
+                    <div className="quick-links-list">
+                        {quickLinks.map((link, index) => (
+                            <div key={link.id} className="quick-link-row">
+                                <div className="reorder-buttons">
+                                    <button
+                                        onClick={() => moveQuickLink(index, -1)}
+                                        className="btn-reorder"
+                                        title="Di chuyển lên"
+                                        disabled={index === 0}
+                                    >
+                                        ↑
+                                    </button>
+                                    <button
+                                        onClick={() => moveQuickLink(index, 1)}
+                                        className="btn-reorder"
+                                        title="Di chuyển xuống"
+                                        disabled={index === quickLinks.length - 1}
+                                    >
+                                        ↓
+                                    </button>
+                                </div>
+
+                                <input
+                                    type="text"
+                                    placeholder="Tên hiển thị"
+                                    value={link.name}
+                                    onChange={(e) => updateQuickLink(link.id, 'name', e.target.value)}
+                                    onBlur={saveQuickLinkUpdate}
+                                    className="link-name-input"
+                                />
+
+                                <input
+                                    type="url"
+                                    placeholder="https://..."
+                                    value={link.url}
+                                    onChange={(e) => updateQuickLink(link.id, 'url', e.target.value)}
+                                    onBlur={saveQuickLinkUpdate}
+                                    className="link-url-input"
+                                />
+
+                                <button
+                                    onClick={() => deleteQuickLink(link.id)}
+                                    className="btn-delete"
+                                    title="Xóa liên kết"
+                                >
+                                    🗑️
+                                </button>
+                            </div>
+                        ))}
+                    </div>
+
+                    <div className="add-quick-link-form">
+                        <input
+                            type="text"
+                            placeholder="Tên hiển thị..."
+                            value={newLinkName}
+                            onChange={(e) => setNewLinkName(e.target.value)}
+                            className="link-name-input"
+                        />
+                        <input
+                            type="url"
+                            placeholder="https://..."
+                            value={newLinkUrl}
+                            onChange={(e) => setNewLinkUrl(e.target.value)}
+                            onKeyDown={(e) => e.key === 'Enter' && addQuickLink()}
+                            className="link-url-input"
+                        />
+                        <button onClick={addQuickLink} className="btn-add-small">
+                            ➕
                         </button>
                     </div>
                 </section>

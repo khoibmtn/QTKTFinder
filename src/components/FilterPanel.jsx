@@ -4,19 +4,7 @@ import { db } from '../services/firebase';
 import { SEARCH_METHODS } from '../services/fuzzySearch';
 import './FilterPanel.css';
 
-const QUICK_LINK_LABELS = {
-    xaydung: 'Xây dựng QTKT',
-    huongdan: 'Hướng dẫn XD QTKT',
-    thumuc: 'Thư mục QTKT BYT, BV',
-    nhanqtkt: 'Thư mục nhận QTKT'
-};
-
-const QUICK_LINK_ICONS = {
-    xaydung: '🔗',
-    huongdan: '❓',
-    thumuc: '📁',
-    nhanqtkt: '📥'
-};
+// Quick links are now stored as an array with { id, name, url, icon }
 
 const SEARCH_METHOD_OPTIONS = [
     {
@@ -49,7 +37,7 @@ const FilterPanel = ({
     onInstantSearchChange
 }) => {
     const [inputValue, setInputValue] = useState(searchValue || '');
-    const [quickLinks, setQuickLinks] = useState({});
+    const [quickLinks, setQuickLinks] = useState([]);
 
     // Load quick links from Firestore
     useEffect(() => {
@@ -58,7 +46,34 @@ const FilterPanel = ({
                 const docRef = doc(db, 'settings', 'quickLinks');
                 const docSnap = await getDoc(docRef);
                 if (docSnap.exists()) {
-                    setQuickLinks(docSnap.data());
+                    const data = docSnap.data();
+                    // Support new array format
+                    if (Array.isArray(data.links)) {
+                        setQuickLinks(data.links);
+                    } else {
+                        // Migrate old format for display
+                        const oldLabels = {
+                            xaydung: 'Xây dựng QTKT',
+                            huongdan: 'Hướng dẫn XD QTKT',
+                            thumuc: 'Thư mục QTKT BYT, BV',
+                            nhanqtkt: 'Thư mục nhận QTKT'
+                        };
+                        const oldIcons = {
+                            xaydung: '🔗',
+                            huongdan: '❓',
+                            thumuc: '📁',
+                            nhanqtkt: '📥'
+                        };
+                        const migratedLinks = Object.entries(data)
+                            .filter(([key, url]) => url && typeof url === 'string')
+                            .map(([key, url]) => ({
+                                id: key,
+                                name: oldLabels[key] || key,
+                                url: url,
+                                icon: oldIcons[key] || '🔗'
+                            }));
+                        setQuickLinks(migratedLinks);
+                    }
                 }
             } catch (error) {
                 console.error('Error loading quick links:', error);
@@ -234,21 +249,21 @@ const FilterPanel = ({
 
 
                 {/* Quick Access Links */}
-                {Object.keys(quickLinks).some(key => quickLinks[key]) && (
+                {quickLinks.length > 0 && (
                     <div className="quick-access-section">
                         <h4 className="quick-access-title">TRUY CẬP NHANH</h4>
                         <div className="quick-access-links">
-                            {Object.entries(quickLinks).map(([key, url]) => (
-                                url && (
+                            {quickLinks.map((link) => (
+                                link.url && (
                                     <a
-                                        key={key}
-                                        href={url}
+                                        key={link.id}
+                                        href={link.url}
                                         target="_blank"
                                         rel="noopener noreferrer"
                                         className="quick-link-btn"
                                     >
-                                        <span className="quick-link-icon">{QUICK_LINK_ICONS[key] || '🔗'}</span>
-                                        <span className="quick-link-text">{QUICK_LINK_LABELS[key] || key}</span>
+                                        <span className="quick-link-icon">{link.icon || '🔗'}</span>
+                                        <span className="quick-link-text">{link.name}</span>
                                     </a>
                                 )
                             ))}

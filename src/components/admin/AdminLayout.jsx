@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { doc, getDoc } from 'firebase/firestore';
 import { db } from '../../services/firebase';
 import AdminSidebar from './AdminSidebar';
@@ -9,7 +9,9 @@ import ConfigurationPage from './ConfigurationPage';
 import './AdminLayout.css';
 
 const AdminLayout = () => {
-    const [activeTab, setActiveTab] = useState('category');
+    const [searchParams] = useSearchParams();
+    const initialTab = searchParams.get('tab') || 'category';
+    const [activeTab, setActiveTab] = useState(initialTab);
 
     // Lifted state for CategoryManagement - persists when switching tabs
     const [categoryState, setCategoryState] = useState({

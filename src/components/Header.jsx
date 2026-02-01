@@ -20,7 +20,7 @@ const Header = () => {
         e.preventDefault();
         if (passwordInput === CONFIG_PASSWORD) {
             setShowPasswordModal(false);
-            navigate('/admin');
+            navigate('/admin?tab=config');
         } else {
             setPasswordError('Mật khẩu không đúng!');
         }

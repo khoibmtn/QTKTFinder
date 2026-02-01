@@ -7,7 +7,7 @@ const ResultsTable = ({ data, loading, chuyenkhoaFilter, searchQuery }) => {
     const [colorRules, setColorRules] = useState(null);
     const [sortConfig, setSortConfig] = useState({ key: null, direction: null });
     const [selectedRecord, setSelectedRecord] = useState(null);
-    const [quickLinks, setQuickLinks] = useState({});
+    const [quickLinks, setQuickLinks] = useState([]);
 
     useEffect(() => {
         loadColorRules();
@@ -31,11 +31,36 @@ const ResultsTable = ({ data, loading, chuyenkhoaFilter, searchQuery }) => {
             const docRef = doc(db, 'settings', 'quickLinks');
             const docSnap = await getDoc(docRef);
             if (docSnap.exists()) {
-                setQuickLinks(docSnap.data());
+                const data = docSnap.data();
+                // Support new array format
+                if (Array.isArray(data.links)) {
+                    setQuickLinks(data.links);
+                } else {
+                    // Fallback for old format - convert to array
+                    const oldLabels = {
+                        thumuc: 'Thư mục QTKT BYT, BV'
+                    };
+                    const converted = Object.entries(data)
+                        .filter(([key, url]) => url && typeof url === 'string')
+                        .map(([key, url]) => ({
+                            id: key,
+                            name: oldLabels[key] || key,
+                            url: url
+                        }));
+                    setQuickLinks(converted);
+                }
             }
         } catch (error) {
             console.error('Error loading quick links:', error);
         }
+    };
+
+    // Find link URL by matching display name
+    const findLinkUrl = (displayName) => {
+        const link = quickLinks.find(l =>
+            l.name && l.name.toLowerCase().includes(displayName.toLowerCase())
+        );
+        return link ? link.url : '#';
     };
 
     // Memoize search terms for highlighting
@@ -163,7 +188,7 @@ const ResultsTable = ({ data, loading, chuyenkhoaFilter, searchQuery }) => {
                 <>
                     . Mở link{' '}
                     <a
-                        href={quickLinks.thumuc || '#'}
+                        href={findLinkUrl('Thư mục QTKT')}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="folder-link"
@@ -181,13 +206,15 @@ const ResultsTable = ({ data, loading, chuyenkhoaFilter, searchQuery }) => {
 
         // Case 2: Chuẩn mới
         if (chuanqtkt.includes('chuẩn mới') || chuanqtkt.includes('chuan moi')) {
-            const fileName = `QĐ ${qdNumber} Hướng dẫn QTKT ${chapterInfo.name}`;
+            // Remove "(Chuẩn mới)" from specialty name
+            const cleanName = chapterInfo.name.replace(/\s*\(Chuẩn mới\)\s*/gi, '').trim();
+            const fileName = `QĐ ${qdNumber} Hướng dẫn QTKT ${cleanName}`;
 
             return (
                 <>
                     . Mở link{' '}
                     <a
-                        href={quickLinks.thumuc || '#'}
+                        href={findLinkUrl('Thư mục QTKT')}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="folder-link"
@@ -204,13 +231,21 @@ const ResultsTable = ({ data, loading, chuyenkhoaFilter, searchQuery }) => {
         }
 
         // Case 3: Chuẩn cũ (default)
-        const soQD = qdNumber && year ? `số ${qdNumber} năm ${year}` : qdbanhanh;
+        // Extract issuing organization
+        let issuingOrg = '';
+        if (qdbanhanh.includes('BYT')) {
+            issuingOrg = 'Bộ Y tế';
+        } else if (qdbanhanh.includes('BVTN')) {
+            issuingOrg = 'BVĐK Thủy Nguyên';
+        } else if (qdbanhanh.includes('TTYT')) {
+            issuingOrg = 'Trung tâm y tế Thủy Nguyên';
+        }
 
         return (
             <>
                 . Căn cứ vào tên quy trình và chuyên khoa, hãy mở link{' '}
                 <a
-                    href={quickLinks.thumuc || '#'}
+                    href={findLinkUrl('Thư mục QTKT')}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="folder-link"
@@ -219,8 +254,11 @@ const ResultsTable = ({ data, loading, chuyenkhoaFilter, searchQuery }) => {
                     Thư mục QTKT BYT, BV
                 </a>{' '}
                 ở bên tay trái, truy cập thư mục{' '}
-                <span className="red-bold">QTKT CHUẨN CŨ</span>, mở thư mục chuyên khoa liên quan nhất và tìm quyết định{' '}
-                <span className="red-bold">{soQD}</span>
+                <span className="red-bold">QTKT CHUẨN CŨ</span>, mở thư mục chuyên khoa liên quan nhất và tìm{' '}
+                <span className="red-bold">
+                    Quyết định số {qdNumber}{issuingOrg ? ` do ${issuingOrg} ban hành` : ''} năm {year}
+                </span>{' '}
+                để tải xuống và mở tìm quy trình cần tìm
             </>
         );
     };

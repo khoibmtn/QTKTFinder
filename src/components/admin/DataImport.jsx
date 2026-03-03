@@ -2,7 +2,11 @@ import { useState, useRef } from 'react';
 import { parseCSV, readFileAsText } from '../../services/csvParser';
 import { batchUploadRecords } from '../../services/firestore';
 import { clearQTKTCache } from '../../hooks/useQTKTData';
+import * as XLSX from 'xlsx';
 import './DataImport.css';
+
+const ACCEPTED_EXTENSIONS = ['.csv', '.xlsx', '.xls'];
+const ACCEPT_STRING = '.csv,.xlsx,.xls';
 
 const DataImport = () => {
     const [file, setFile] = useState(null);
@@ -44,15 +48,25 @@ const DataImport = () => {
     };
 
     const processFile = async (selectedFile) => {
-        if (!selectedFile.name.endsWith('.csv')) {
-            setMessage('❌ Vui lòng chọn file CSV!');
+        const fileName = selectedFile.name.toLowerCase();
+        const isValidFile = ACCEPTED_EXTENSIONS.some(ext => fileName.endsWith(ext));
+
+        if (!isValidFile) {
+            setMessage('❌ Vui lòng chọn file CSV hoặc Excel (.xlsx, .xls)!');
             return;
         }
 
         try {
             setMessage('');
-            const text = await readFileAsText(selectedFile);
-            const parsedRecords = parseCSV(text);
+            let parsedRecords;
+
+            if (fileName.endsWith('.csv')) {
+                const text = await readFileAsText(selectedFile);
+                parsedRecords = parseCSV(text);
+            } else {
+                parsedRecords = await parseExcelFile(selectedFile);
+            }
+
             setFile(selectedFile);
             setRecords(parsedRecords);
             setMessage(`✅ Đã đọc ${parsedRecords.length} bản ghi từ file`);
@@ -61,6 +75,80 @@ const DataImport = () => {
             setFile(null);
             setRecords([]);
         }
+    };
+
+    const parseExcelFile = (file) => {
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                try {
+                    const data = new Uint8Array(e.target.result);
+                    const workbook = XLSX.read(data, { type: 'array' });
+                    const sheetName = workbook.SheetNames[0];
+                    const worksheet = workbook.Sheets[sheetName];
+                    const jsonData = XLSX.utils.sheet_to_json(worksheet, { defval: '' });
+
+                    if (jsonData.length === 0) {
+                        reject(new Error('File Excel không có dữ liệu'));
+                        return;
+                    }
+
+                    // Map columns - support both exact and Vietnamese header names
+                    const headerMap = {
+                        'qdbanhanh': 'qdbanhanh',
+                        'chuyenkhoa': 'chuyenkhoa',
+                        'tenqtkt': 'tenqtkt',
+                        'chuanqtkt': 'chuanqtkt',
+                        'số qđ ban hành': 'qdbanhanh',
+                        'so qd ban hanh': 'qdbanhanh',
+                        'chuyên khoa': 'chuyenkhoa',
+                        'chuyen khoa': 'chuyenkhoa',
+                        'tên qtkt': 'tenqtkt',
+                        'ten qtkt': 'tenqtkt',
+                        'chuẩn qtkt': 'chuanqtkt',
+                        'chuan qtkt': 'chuanqtkt',
+                    };
+
+                    const firstRow = jsonData[0];
+                    const actualHeaders = Object.keys(firstRow);
+                    const mapping = {};
+
+                    actualHeaders.forEach(h => {
+                        const normalized = h.trim().toLowerCase();
+                        if (headerMap[normalized]) {
+                            mapping[h] = headerMap[normalized];
+                        }
+                    });
+
+                    const requiredFields = ['qdbanhanh', 'chuyenkhoa', 'tenqtkt', 'chuanqtkt'];
+                    const mappedFields = Object.values(mapping);
+                    const missingFields = requiredFields.filter(f => !mappedFields.includes(f));
+
+                    if (missingFields.length > 0) {
+                        reject(new Error(
+                            `Thiếu cột: ${missingFields.join(', ')}. ` +
+                            `Các cột tìm thấy: ${actualHeaders.join(', ')}`
+                        ));
+                        return;
+                    }
+
+                    const records = jsonData.map(row => {
+                        const record = {};
+                        Object.entries(mapping).forEach(([excelCol, fieldName]) => {
+                            record[fieldName] = String(row[excelCol] || '').trim();
+                        });
+                        return record;
+                    });
+
+                    console.log(`✅ Parsed ${records.length} records from Excel (sheet: ${sheetName})`);
+                    resolve(records);
+                } catch (err) {
+                    reject(new Error(`Lỗi đọc file Excel: ${err.message}`));
+                }
+            };
+            reader.onerror = () => reject(new Error('Không thể đọc file'));
+            reader.readAsArrayBuffer(file);
+        });
     };
 
     const handleUpload = async () => {
@@ -121,7 +209,7 @@ const DataImport = () => {
     return (
         <div className="data-import">
             <div className="page-header">
-                <h2>🏠 Admin - Import dữ liệu CSV</h2>
+                <h2>🏠 Admin - Import dữ liệu</h2>
             </div>
 
             <div className="import-layout">
@@ -134,7 +222,7 @@ const DataImport = () => {
                         onDragOver={handleDrag}
                         onDrop={handleDrop}
                     >
-                        <p>Kéo thả file CSV vào đây</p>
+                        <p>Kéo thả file CSV hoặc Excel vào đây</p>
                         <span>hoặc</span>
                         <button
                             onClick={() => fileInputRef.current?.click()}
@@ -145,7 +233,7 @@ const DataImport = () => {
                         <input
                             ref={fileInputRef}
                             type="file"
-                            accept=".csv"
+                            accept={ACCEPT_STRING}
                             onChange={handleFileChange}
                             style={{ display: 'none' }}
                         />
@@ -183,9 +271,11 @@ const DataImport = () => {
                     </div>
 
                     <div className="csv-note">
-                        <h4>Lưu ý cấu trúc file CSV:</h4>
-                        <p>Tệp dữ liệu csv có 4 cột có cùng:</p>
+                        <h4>Lưu ý cấu trúc file:</h4>
+                        <p>Hỗ trợ file <strong>CSV</strong>, <strong>Excel (.xlsx, .xls)</strong></p>
+                        <p>File cần có 4 cột:</p>
                         <code>qdbanhanh, chuyenkhoa, tenqtkt, chuanqtkt</code>
+                        <p style={{ fontSize: '0.8rem', color: '#888', marginTop: '0.25rem' }}>Hoặc tiếng Việt: Số QĐ ban hành, Chuyên khoa, Tên QTKT, Chuẩn QTKT</p>
                     </div>
 
                     {uploading && (
@@ -237,6 +327,7 @@ const DataImport = () => {
                                         <th>Số QĐ ban hành</th>
                                         <th>Chuyên khoa</th>
                                         <th>Tên QTKT</th>
+                                        <th>Chuẩn QTKT</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -245,6 +336,7 @@ const DataImport = () => {
                                             <td>{record.qdbanhanh}</td>
                                             <td>{record.chuyenkhoa}</td>
                                             <td>{record.tenqtkt}</td>
+                                            <td>{record.chuanqtkt}</td>
                                         </tr>
                                     ))}
                                 </tbody>

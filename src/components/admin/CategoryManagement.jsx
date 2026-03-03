@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { collection, getDocs, deleteDoc, doc, updateDoc, addDoc } from 'firebase/firestore';
 import { db } from '../../services/firebase';
 import { clearQTKTCache } from '../../hooks/useQTKTData';
+import * as XLSX from 'xlsx';
 import './CategoryManagement.css';
 
 const CategoryManagement = ({ categoryState, setCategoryState, chuanQTKTOptions }) => {
@@ -55,6 +56,41 @@ const CategoryManagement = ({ categoryState, setCategoryState, chuanQTKTOptions 
         } catch (error) {
             setMessage(`❌ Lỗi: ${error.message}`);
         }
+    };
+
+    const handleDownloadExcel = () => {
+        if (!records || records.length === 0) {
+            setMessage('❌ Không có dữ liệu để tải xuống');
+            return;
+        }
+
+        const exportData = records.map((record, index) => ({
+            'STT': index + 1,
+            'Số QĐ ban hành': record.qdbanhanh || '',
+            'Chuyên khoa': record.chuyenkhoa || '',
+            'Tên QTKT': record.tenqtkt || '',
+            'Chuẩn QTKT': record.chuanqtkt || ''
+        }));
+
+        const worksheet = XLSX.utils.json_to_sheet(exportData);
+
+        // Set column widths
+        worksheet['!cols'] = [
+            { wch: 5 },   // STT
+            { wch: 35 },  // Số QĐ ban hành
+            { wch: 20 },  // Chuyên khoa
+            { wch: 60 },  // Tên QTKT
+            { wch: 15 },  // Chuẩn QTKT
+        ];
+
+        const workbook = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(workbook, worksheet, 'Danh mục QTKT');
+
+        const now = new Date();
+        const dateStr = `${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, '0')}${String(now.getDate()).padStart(2, '0')}`;
+        XLSX.writeFile(workbook, `Danh_muc_QTKT_${dateStr}.xlsx`);
+
+        setMessage(`✅ Đã tải xuống file Excel (${records.length} bản ghi)`);
     };
 
     const handleEdit = (record) => {
@@ -126,6 +162,9 @@ const CategoryManagement = ({ categoryState, setCategoryState, chuanQTKTOptions 
                         <>
                             <button onClick={loadData} disabled={loading} className="btn-secondary">
                                 🔄 Làm mới
+                            </button>
+                            <button onClick={handleDownloadExcel} className="btn-download">
+                                📊 Tải Excel
                             </button>
                             <button onClick={handleAdd} className="btn-primary">
                                 ➕ Thêm mới

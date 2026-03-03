@@ -62,6 +62,21 @@
     background: #45a049;
 }
 
+.btn-download {
+    padding: 0.6rem 1.25rem;
+    background: #FF9800;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.btn-download:hover {
+    background: #F57C00;
+}
+
 .btn-secondary {
     padding: 0.6rem 1.25rem;
     background: #f5f5f5;

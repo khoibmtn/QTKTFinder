@@ -204,7 +204,33 @@ const ResultsTable = ({ data, loading, chuyenkhoaFilter, searchQuery }) => {
             );
         }
 
-        // Case 2: Chuẩn mới
+        // Case 2: BV ban hành 2006 (PL2)
+        if (qdbanhanh.includes('BV ban hành 2006 (PL2)') || qdbanhanh.includes('BV ban hanh 2006 (PL2)')) {
+            const fileName = chapterInfo.num
+                ? `CHƯƠNG ${chapterInfo.num}. ${chapterInfo.name}.docx`
+                : `${chuyenkhoa}.docx`;
+
+            return (
+                <>
+                    . Mở link{' '}
+                    <a
+                        href={findLinkUrl('Thư mục QTKT')}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="folder-link"
+                        onClick={(e) => e.stopPropagation()}
+                    >
+                        Thư mục QTKT BYT, BV
+                    </a>{' '}
+                    ở bên tay trái, truy cập thư mục{' '}
+                    <span className="red-bold">BV ban hành 2006 (PL2)</span>, sau đó tìm file{' '}
+                    <span className="red-bold">{fileName}</span> và tải xuống, tìm quy trình số{' '}
+                    <span className="red-bold">{stt}</span>
+                </>
+            );
+        }
+
+        // Case 3: Chuẩn mới
         if (chuanqtkt.includes('chuẩn mới') || chuanqtkt.includes('chuan moi')) {
             // Remove "(Chuẩn mới)" from specialty name
             const cleanName = chapterInfo.name.replace(/\s*\(Chuẩn mới\)\s*/gi, '').trim();

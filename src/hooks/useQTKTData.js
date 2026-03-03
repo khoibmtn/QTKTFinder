@@ -10,59 +10,43 @@ export const useQTKTData = () => {
     const [error, setError] = useState(null);
 
     useEffect(() => {
-        setLoading(true);
+        // Try to load from cache for instant display
+        try {
+            const cached = localStorage.getItem(CACHE_KEY);
+            if (cached) {
+                const { data, timestamp } = JSON.parse(cached);
+                const isExpired = Date.now() - timestamp > CACHE_DURATION;
 
-        // Try to load from cache first
-        const loadFromCache = () => {
-            try {
-                const cached = localStorage.getItem(CACHE_KEY);
-                if (cached) {
-                    const { data, timestamp } = JSON.parse(cached);
-                    const isExpired = Date.now() - timestamp > CACHE_DURATION;
-
-                    // Don't use cache if expired OR if data is empty
-                    if (!isExpired && data && data.length > 0) {
-                        console.log('📦 Loading data from cache');
-                        setRecords(data);
-                        setLoading(false);
-                        return true; // Cache hit
-                    } else if (isExpired) {
-                        console.log('⏰ Cache expired, fetching fresh data');
-                    } else {
-                        console.log('📭 Cache empty, fetching fresh data');
-                    }
+                if (!isExpired && data && data.length > 0) {
+                    console.log('📦 Loading data from cache (while fetching fresh data)');
+                    setRecords(data);
+                    setLoading(false);
                 }
-            } catch (err) {
-                console.error('Error reading cache:', err);
             }
-            return false; // Cache miss, expired, or empty
-        };
-
-        // Check cache first
-        const cacheHit = loadFromCache();
-
-        if (!cacheHit) {
-            // Fetch from Firestore if no valid cache
-            console.log('🔥 Fetching data from Firestore');
-            const unsubscribe = subscribeToQTKTRecords((data) => {
-                setRecords(data);
-                setLoading(false);
-                setError(null);
-
-                // Save to cache
-                try {
-                    localStorage.setItem(CACHE_KEY, JSON.stringify({
-                        data,
-                        timestamp: Date.now()
-                    }));
-                    console.log('💾 Data cached successfully');
-                } catch (err) {
-                    console.error('Error saving to cache:', err);
-                }
-            });
-
-            return () => unsubscribe();
+        } catch (err) {
+            console.error('Error reading cache:', err);
         }
+
+        // ALWAYS subscribe to Firestore for fresh data
+        console.log('🔥 Subscribing to Firestore for real-time updates');
+        const unsubscribe = subscribeToQTKTRecords((data) => {
+            setRecords(data);
+            setLoading(false);
+            setError(null);
+
+            // Update cache with fresh data
+            try {
+                localStorage.setItem(CACHE_KEY, JSON.stringify({
+                    data,
+                    timestamp: Date.now()
+                }));
+                console.log('💾 Cache updated with fresh data');
+            } catch (err) {
+                console.error('Error saving to cache:', err);
+            }
+        });
+
+        return () => unsubscribe();
     }, []);
 
     return { records, loading, error };

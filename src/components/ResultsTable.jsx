@@ -204,8 +204,8 @@ const ResultsTable = ({ data, loading, chuyenkhoaFilter, searchQuery }) => {
             );
         }
 
-        // Case 2: BV ban hành 2006 (PL2)
-        if (qdbanhanh.includes('BV ban hành 2006 (PL2)') || qdbanhanh.includes('BV ban hanh 2006 (PL2)')) {
+        // Case 2: BV ban hành 2026 (PL2)
+        if (qdbanhanh.includes('BV ban hành 2026 (PL2)') || qdbanhanh.includes('BV ban hanh 2026 (PL2)')) {
             const fileName = chapterInfo.num
                 ? `CHƯƠNG ${chapterInfo.num}. ${chapterInfo.name}.docx`
                 : `${chuyenkhoa}.docx`;
@@ -223,7 +223,7 @@ const ResultsTable = ({ data, loading, chuyenkhoaFilter, searchQuery }) => {
                         Thư mục QTKT BYT, BV
                     </a>{' '}
                     ở bên tay trái, truy cập thư mục{' '}
-                    <span className="red-bold">BV ban hành 2006 (PL2)</span>, sau đó tìm file{' '}
+                    <span className="red-bold">BV ban hành 2026 (PL2)</span>, sau đó tìm file{' '}
                     <span className="red-bold">{fileName}</span> và tải xuống, tìm quy trình số{' '}
                     <span className="red-bold">{stt}</span>
                 </>
